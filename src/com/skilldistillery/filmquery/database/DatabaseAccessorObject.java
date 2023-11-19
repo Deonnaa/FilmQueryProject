@@ -157,9 +157,8 @@ public class DatabaseAccessorObject implements DatabaseAccessor {
 			String sql = "SELECT film.*, language.name AS language_name FROM film JOIN language ON film.language_id = language.id WHERE title LIKE ? OR description LIKE ?";
 
 			stmt = conn.prepareStatement(sql);
-			String searchKeyword = "%" + keyword + "%";
-			stmt.setString(1, searchKeyword);
-			stmt.setString(2, searchKeyword);
+			stmt.setString(1, "%" + keyword + "%");
+			stmt.setString(2, "%" + keyword + "%");
 
 			rs = stmt.executeQuery();
 
@@ -174,7 +173,6 @@ public class DatabaseAccessorObject implements DatabaseAccessor {
 				film.setLanguage(rs.getString("language_name"));
 
 				film.setActors(findActorsByFilmId(film.getFilmId()));
-
 				films.add(film);
 			}
 		} catch (SQLException e) {
