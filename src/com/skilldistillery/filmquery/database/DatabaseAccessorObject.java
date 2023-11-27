@@ -24,32 +24,32 @@ public class DatabaseAccessorObject implements DatabaseAccessor {
 	@Override
 	public Film findFilmById(int filmId) throws SQLException {
 		Film film = null;
-		Connection conn = DriverManager.getConnection(URL, USER, PWD);
-
 		String sql = "SELECT film.*, language.name AS language_name FROM film JOIN language ON film.language_id = language.id WHERE film.id = ?";
+		try (Connection conn = DriverManager.getConnection(URL, USER, PWD); // Specify your database
+				PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-		PreparedStatement stmt = conn.prepareStatement(sql);
-		stmt.setInt(1, filmId);
+			stmt.setInt(1, filmId);
+			ResultSet rs = stmt.executeQuery();
 
-		ResultSet filmResult = stmt.executeQuery();
+			if (rs.next()) {
+				film = new Film();
+				film.setFilmId(rs.getInt("id"));
+				film.setTitle(rs.getString("title"));
+				film.setDesc(rs.getString("description"));
+				film.setReleaseYear(rs.getShort("release_year"));
+				film.setLangId(rs.getInt("language_id"));
+				film.setRentDur(rs.getInt("rental_duration"));
+				film.setRate(rs.getDouble("rental_rate"));
+				film.setLength(rs.getInt("length"));
+				film.setRepCost(rs.getDouble("replacement_cost"));
+				film.setRating(rs.getString("rating"));
+				film.setFeatures(rs.getString("special_features"));
+				film.setLanguage(rs.getString("language_name"));
 
-		if (filmResult.next()) {
-			film = new Film();
-
-			film.setFilmId(filmResult.getInt("id"));
-			film.setTitle(filmResult.getString("title"));
-			film.setDesc(filmResult.getString("description"));
-			film.setReleaseYear(filmResult.getShort("release_year"));
-			film.setLangId(filmResult.getInt("language_id"));
-			film.setLanguage(filmResult.getString("language_name"));
-			film.setRentDur(filmResult.getInt("rental_duration"));
-			film.setRate(filmResult.getDouble("rental_rate"));
-			film.setLength(filmResult.getInt("length"));
-			film.setRepCost(filmResult.getDouble("replacement_cost"));
-			film.setRating(filmResult.getString("rating"));
-			film.setFeatures(filmResult.getString("special_features"));
-
-			film.setActors(findActorsByFilmId(filmId));
+				film.setActors(findActorsByFilmId(filmId));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace(); // Handle exception
 		}
 		return film;
 	}
